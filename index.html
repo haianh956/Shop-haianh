@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHOP HAIANH - FULL QUẢN TRỊ</title>
+    <style>
+        :root { --green: #2ecc71; --red: #e74c3c; --dark: #2c3e50; --bg: #f1f2f6; --blue: #3498db; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding-bottom: 30px; }
+        .header { background: var(--dark); color: #fff; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--green); position: sticky; top: 0; z-index: 1000; }
+        .nav { display: flex; background: #fff; border-bottom: 1px solid #ddd; }
+        .tab { flex: 1; padding: 12px; text-align: center; font-size: 12px; font-weight: bold; color: #777; cursor: pointer; }
+        .tab.active { color: var(--green); border-bottom: 3px solid var(--green); }
+        .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px; max-width: 600px; margin: auto; }
+        .game-card { background: #fff; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; }
+        .acc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; max-width: 600px; margin: auto; }
+        .acc-box { background: #fff; border-radius: 10px; padding: 10px; border: 1px solid #ddd; text-align: center; }
+        .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+        button { border: none; border-radius: 8px; padding: 12px; font-weight: bold; cursor: pointer; color: white; width: 100%; transition: 0.3s; }
+        .btn-buy { background: var(--green); }
+        .btn-red { background: var(--red); }
+        .btn-blue { background: var(--blue); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; }
+        .user-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
+        .user-table th, .user-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .notice { font-size: 11px; color: #e74c3c; margin-top: 5px; font-weight: bold; }
+        .btn-mini { padding: 4px 8px; font-size: 10px; width: auto; display: inline-block; margin: 2px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div style="font-weight: bold; font-size: 18px;">SHOP HAIANH</div>
+    <div id="auth-zone"></div>
+</div>
+
+<div class="nav">
+    <div class="tab active" onclick="goTab('buy', this)">MUA ACC</div>
+    <div class="tab" onclick="goTab('topup', this)">NẠP TIỀN</div>
+    <div id="tab-his-btn" class="tab" style="display:none" onclick="goTab('his', this)">LỊCH SỬ</div>
+    <div id="tab-adm-btn" class="tab" style="display:none" onclick="goTab('adm', this)">QUẢN TRỊ</div>
+</div>
+
+<div id="tab-buy" class="tab-sec">
+    <div id="menu-game" class="grid-menu">
+        <div class="game-card" onclick="openGame('Roblox')">🤖<h3>Roblox</h3></div>
+        <div class="game-card" onclick="openGame('Free Fire')">🔥<h3>Free Fire</h3></div>
+        <div class="game-card" onclick="openGame('Liên Quân')">⚔️<h3>Liên Quân</h3></div>
+        <div class="game-card" onclick="openGame('Liên Quân 0k')">🎁<h3>Liên Quân 0k</h3></div>
+        <div class="game-card" style="background: #fff9e6; border: 2px solid #f1c40f;" onclick="openGame('Tặng mã nạp tiền')">🎫<h3>Tặng mã nạp tiền</h3></div>
+    </div>
+    <div id="detail-game" style="display:none; padding:10px; max-width:600px; margin:auto;">
+        <button style="background:#95a5a6; width:auto; margin-bottom:15px;" onclick="backToMenu()">⬅ Quay lại</button>
+        <div id="acc-list-grid" class="acc-grid"></div>
+    </div>
+</div>
+
+<div id="tab-topup" class="tab-sec" style="display:none; padding:15px;">
+    <div class="card">
+        <h3>💳 Nạp Thẻ Cào (Duyệt tay)</h3>
+        <select id="card-type">
+            <option value="Viettel">Viettel</option><option value="Vinaphone">Vinaphone</option><option value="Mobifone">Mobifone</option><option value="Zing">Zing</option>
+        </select>
+        <select id="card-amount">
+            <option value="10000">10.000đ</option><option value="20000">20.000đ</option><option value="50000">50.000đ</option><option value="100000">100.000đ</option><option value="200000">200.000đ</option><option value="500000">500.000đ</option>
+        </select>
+        <input type="number" id="card-seri" placeholder="Số Seri thẻ">
+        <input type="number" id="card-pin" placeholder="Mã thẻ (Pin)">
+        <button class="btn-red" onclick="sendCard()">GỬI THẺ DUYỆT</button>
+        <div id="card-notice" class="notice"></div>
+    </div>
+    <div class="card">
+        <h3>🎁 Nhập Mã Giftcode</h3>
+        <input type="text" id="gift-input" placeholder="Nhập mã nạp tiền">
+        <button class="btn-blue" onclick="useGiftcode()">XÁC NHẬN</button>
+    </div>
+</div>
+
+<div id="tab-his" class="tab-sec" style="display:none; padding:15px;"><div id="his-display"></div></div>
+
+<div id="tab-adm" class="tab-sec" style="display:none; padding:15px;">
+    <div class="card">
+        <h3>⏳ Thẻ Chờ Duyệt</h3>
+        <div style="overflow-x: auto;">
+            <table class="user-table">
+                <thead><tr><th>Khách</th><th>Tiền</th><th>Seri/Mã</th><th>Lệnh</th></tr></thead>
+                <tbody id="card-list-adm"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>👥 Quản Lý Khách Hàng (TK/MK/Tiền)</h3>
+        <div style="overflow-x: auto;">
+            <table class="user-table">
+                <thead><tr><th>Tài khoản</th><th>Mật khẩu</th><th>Số dư</th><th>Hành động</th></tr></thead>
+                <tbody id="user-list-adm"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>📤 Đăng Acc / Mã Tặng</h3>
+        <select id="post-cat">
+            <option>Roblox</option><option>Free Fire</option><option>Liên Quân</option><option>Liên Quân 0k</option><option>Tặng mã nạp tiền</option>
+        </select>
+        <input id="post-u" placeholder="TK hoặc Nội dung Mã">
+        <input id="post-p" placeholder="MK">
+        <input id="post-pr" type="number" placeholder="Giá">
+        <button class="btn-red" onclick="admPost()">ĐĂNG SHOP</button>
+    </div>
+
+    <div class="card">
+        <h3>💎 Giftcode</h3>
+        <input id="new-code" placeholder="Mã">
+        <input id="code-val" type="number" placeholder="Tiền">
+        <button class="btn-blue" onclick="createCode()">TẠO MÃ</button>
+    </div>
+</div>
+
+<div id="auth-modal" class="modal">
+    <div class="modal-content">
+        <h2 id="modal-title">ĐĂNG NHẬP</h2>
+        <input type="text" id="u-in" placeholder="Tài khoản">
+        <input type="password" id="p-in" placeholder="Mật khẩu">
+        <button class="btn-red" onclick="doAuth()">VÀO SHOP</button>
+        <p style="cursor:pointer;font-size:12px;margin-top:15px;color:#777" onclick="toggleAuthMode()">Chưa có tài khoản? Đăng ký</p>
+    </div>
+</div>
+
+<script>
+    let isLoginMode = true;
+    const ADMIN_USER = "adminHaianh";
+    const ADMIN_PASS = "Haiadmin";
+
+    let db = JSON.parse(localStorage.getItem('shop_haianh_v_full_adm')) || {
+        users: [{u: ADMIN_USER, p: ADMIN_PASS, m: 999999999, bought: []}],
+        accs: [], codes: [], cards: [], session: null
+    };
+
+    function save() { localStorage.setItem('shop_haianh_v_full_adm', JSON.stringify(db)); render(); }
+
+    function toggleAuthMode() {
+        isLoginMode = !isLoginMode;
+        document.getElementById('modal-title').innerText = isLoginMode ? 'ĐĂNG NHẬP' : 'ĐĂNG KÝ';
+    }
+
+    function doAuth() {
+        let u = document.getElementById('u-in').value.trim(), p = document.getElementById('p-in').value.trim();
+        if(!u || !p) return alert("Cậu điền đủ thông tin nhé!");
+        if(isLoginMode) {
+            let user = db.users.find(x => x.u === u && x.p === p);
+            if(user) { db.session = u; save(); document.getElementById('auth-modal').style.display='none'; } 
+            else alert("Sai tài khoản hoặc mật khẩu!");
+        } else {
+            if(u === ADMIN_USER || db.users.find(x => x.u === u)) return alert("Tên này có người dùng rồi!");
+            db.users.push({u, p, m: 0, bought: []}); isLoginMode=true; save(); alert("Đăng ký thành công!");
+        }
+    }
+
+    // --- CÁC HÀM QUẢN TRỊ ---
+    function deleteUser(username) {
+        if(confirm("Xóa khách " + username + "?")) {
+            db.users = db.users.filter(u => u.u !== username);
+            if(db.session === username) db.session = null;
+            save();
+        }
+    }
+
+    function adjustMoney(username, type) {
+        let amount = prompt(type === 'add' ? "Nhập số tiền muốn CỘNG cho " + username : "Nhập số tiền muốn TRỪ của " + username);
+        amount = parseInt(amount);
+        if(isNaN(amount) || amount <= 0) return alert("Số tiền không hợp lệ!");
+        
+        let user = db.users.find(u => u.u === username);
+        if(user) {
+            if(type === 'add') user.m += amount;
+            else {
+                if(user.m < amount) return alert("Khách không đủ tiền để trừ!");
+                user.m -= amount;
+            }
+            save();
+            alert("Thành công!");
+        }
+    }
+
+    function approveCard(id) {
+        let idx = db.cards.findIndex(c => c.id === id);
+        let user = db.users.find(u => u.u === db.cards[idx].user);
+        if(user) user.m += db.cards[idx].amount;
+        db.cards.splice(idx, 1); save();
+        alert("Đã duyệt!");
+    }
+
+    function rejectCard(id) { db.cards.splice(db.cards.findIndex(c => c.id === id), 1); save(); alert("Đã từ chối!"); }
+
+    function render() {
+        if(!db.session) { document.getElementById('auth-modal').style.display = 'flex'; return; }
+        let me = db.users.find(x => x.u === db.session);
+        document.getElementById('auth-zone').innerHTML = `<span>💰 ${me.u === ADMIN_USER ? '∞' : me.m.toLocaleString()}đ</span> | <b onclick="logout()" style="cursor:pointer;color:var(--red)">THOÁT</b>`;
+        document.getElementById('tab-his-btn').style.display = 'block';
+        
+        if(me.u === ADMIN_USER) {
+            document.getElementById('tab-adm-btn').style.display = 'block';
+            
+            // Render thẻ chờ
+            document.getElementById('card-list-adm').innerHTML = db.cards.map(c => `
+                <tr>
+                    <td>${c.user}</td><td>${c.amount.toLocaleString()}</td><td>S:${c.seri}<br>M:${c.pin}</td>
+                    <td><button class="btn-buy btn-mini" onclick="approveCard(${c.id})">Duyệt</button>
+                    <button class="btn-red btn-mini" onclick="rejectCard(${c.id})">Xóa</button></td>
+                </tr>
+            `).join('') || '<tr><td colspan="4">Hết thẻ chờ</td></tr>';
+
+            // Render danh sách khách hàng có Cộng/Trừ/Xóa
+            document.getElementById('user-list-adm').innerHTML = db.users.filter(u => u.u !== ADMIN_USER).map(u => `
+                <tr>
+                    <td>${u.u}</td><td>${u.p}</td><td>${u.m.toLocaleString()}đ</td>
+                    <td>
+                        <button class="btn-buy btn-mini" onclick="adjustMoney('${u.u}', 'add')">+</button>
+                        <button class="btn-blue btn-mini" onclick="adjustMoney('${u.u}', 'sub')">-</button>
+                        <button class="btn-red btn-mini" onclick="deleteUser('${u.u}')">X</button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="4">Không có khách</td></tr>';
+        }
+        document.getElementById('his-display').innerHTML = `<h3>📜 Lịch sử nhận</h3>` + me.bought.map(a => `<div class="card"><b>${a.cat}</b><br>${a.u} ${a.p ? '| '+a.p : ''}</div>`).join('') || "Chưa có gì!";
+    }
+
+    // --- CÁC HÀM CƠ BẢN ---
+    function sendCard() {
+        let type = document.getElementById('card-type').value, amount = parseInt(document.getElementById('card-amount').value);
+        let seri = document.getElementById('card-seri').value.trim(), pin = document.getElementById('card-pin').value.trim();
+        let err = "";
+        if(type === "Viettel" && (![11, 14].includes(seri.length) || ![13, 15].includes(pin.length))) err = "Sai định dạng Viettel!";
+        if(type === "Mobifone" && (seri.length !== 15 || pin.length !== 12)) err = "Sai định dạng Mobi!";
+        if(type === "Vinaphone" && (seri.length !== 14 || ![12, 14].includes(pin.length))) err = "Sai định dạng Vina!";
+        if(type === "Zing" && (seri.length !== 12 || pin.length !== 9)) err = "Sai định dạng Zing!";
+        if(err) { document.getElementById('card-notice').innerText = "⚠️ " + err; return; }
+        db.cards.push({ id: Date.now(), user: db.session, type, amount, seri, pin });
+        save(); alert("Đã gửi thẻ!");
+    }
+
+    function createCode() {
+        let code = document.getElementById('new-code').value.toUpperCase().trim(), val = parseInt(document.getElementById('code-val').value);
+        if(code && val) { db.codes.push({code, val}); save(); alert("Đã tạo!"); }
+    }
+
+    function useGiftcode() {
+        let codeIn = document.getElementById('gift-input').value.toUpperCase().trim(), idx = db.codes.findIndex(c => c.code === codeIn);
+        if(idx === -1) return alert("Mã sai!");
+        db.users.find(x => x.u === db.session).m += db.codes[idx].val; db.codes.splice(idx, 1); save(); alert("Nạp thành công!");
+    }
+
+    function openGame(cat) {
+        document.getElementById('menu-game').style.display = 'none';
+        document.getElementById('detail-game').style.display = 'block';
+        let filtered = db.accs.filter(a => a.cat === cat && !a.sold);
+        document.getElementById('acc-list-grid').innerHTML = filtered.map(a => `<div class="acc-box"><b>#${a.id}</b><br><span style="color:red">${a.pr===0?'FREE':a.pr.toLocaleString()+'đ'}</span><br><button class="btn-buy" onclick="buy(${a.id})">NHẬN</button></div>`).join('') || "Hết hàng!";
+    }
+
+    function buy(id) {
+        let me = db.users.find(x => x.u === db.session), acc = db.accs.find(a => a.id === id);
+        if(me.u !== ADMIN_USER && me.m < acc.pr) return alert("Thiếu tiền!");
+        if(confirm("Xác nhận?")) { if(me.u !== ADMIN_USER) me.m -= acc.pr; acc.sold = true; me.bought.push({...acc}); save(); openGame(acc.cat); }
+    }
+
+    function admPost() {
+        db.accs.push({cat: document.getElementById('post-cat').value, u: document.getElementById('post-u').value, p: document.getElementById('post-p').value, pr: parseInt(document.getElementById('post-pr').value)||0, sold: false, id: Date.now()});
+        save(); alert("Đã đăng!");
+    }
+
+    function backToMenu() { document.getElementById('menu-game').style.display = 'grid'; document.getElementById('detail-game').style.display = 'none'; }
+    function goTab(id, el) {
+        document.querySelectorAll('.tab-sec').forEach(s => s.style.display = 'none');
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('tab-' + id).style.display = 'block'; el.classList.add('active');
+        if(id === 'buy') backToMenu();
+    }
+    function logout() { db.session = null; save(); location.reload(); }
+    render();
+</script>
+</body>
+</html>
