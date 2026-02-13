@@ -3,60 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SHOP HAIANH - ONLINE 24/7</title>
+    <title>SHOP HAIANH</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <style>
         :root { --green: #2ecc71; --red: #e74c3c; --dark: #2c3e50; --bg: #f1f2f6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding-bottom: 30px; }
-        .header { background: var(--dark); color: #fff; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--green); position: sticky; top: 0; z-index: 1000; }
+        body { font-family: sans-serif; background: var(--bg); margin: 0; }
+        .header { background: var(--dark); color: #fff; padding: 15px; display: flex; justify-content: space-between; border-bottom: 4px solid var(--green); }
         .nav { display: flex; background: #fff; border-bottom: 1px solid #ddd; }
-        .tab { flex: 1; padding: 12px; text-align: center; font-size: 12px; font-weight: bold; color: #777; cursor: pointer; }
+        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: bold; font-size: 13px; }
         .tab.active { color: var(--green); border-bottom: 3px solid var(--green); }
-        .card { background: white; padding: 15px; border-radius: 10px; margin: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { border: none; border-radius: 8px; padding: 12px; font-weight: bold; cursor: pointer; color: white; width: 100%; }
-        .btn-buy { background: var(--green); }
-        .btn-red { background: var(--red); }
-        .user-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        .user-table th, .user-table td { border: 1px solid #ddd; padding: 8px; }
+        .card { background: white; padding: 15px; border-radius: 10px; margin: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        button { border: none; border-radius: 8px; padding: 12px; font-weight: bold; cursor: pointer; color: white; width: 100%; margin-top: 10px; }
     </style>
 </head>
 <body>
-
-<div class="header">
-    <div style="font-weight: bold;">SHOP HAIANH</div>
-    <div id="auth-zone">Đang tải...</div>
-</div>
-
-<div class="nav">
-    <div class="tab active" onclick="goTab('buy', this)">MUA ACC</div>
-    <div class="tab" onclick="goTab('topup', this)">NẠP TIỀS</div>
-    <div id="tab-adm-btn" class="tab" style="display:none" onclick="goTab('adm', this)">QUẢN TRỊ</div>
-</div>
-
-<div id="tab-buy" class="tab-sec">
-    <div class="card"><h3>Chào mừng cậu đến với Shop HaiAnh!</h3><p>Chọn danh mục phía dưới để mua acc nhé.</p></div>
-</div>
-
-<div id="tab-topup" class="tab-sec" style="display:none; padding:15px;">
-    <div class="card">
-        <h3>💳 Nạp Thẻ Cào</h3>
-        <input type="text" id="card-seri" placeholder="Số Seri">
-        <input type="text" id="card-pin" placeholder="Mã thẻ">
-        <button class="btn-red" onclick="sendCard()">GỬI THẺ DUYỆT</button>
+    <div class="header">
+        <b>SHOP HAIANH</b>
+        <div id="user-info">Đang tải...</div>
     </div>
-</div>
-
-<div id="tab-adm" class="tab-sec" style="display:none; padding:15px;">
-    <div class="card">
-        <h3>👥 Quản Lý Khách</h3>
-        <table class="user-table"><tbody id="user-list-adm"></tbody></table>
+    <div class="nav">
+        <div class="tab active" onclick="show('buy')">MUA ACC</div>
+        <div class="tab" onclick="show('topup')">NẠP TIỀN</div>
+        <div id="adm-btn" class="tab" style="display:none" onclick="show('adm')">ADMIN</div>
     </div>
-</div>
+    <div id="buy" class="sec"><div class="card"><h3>Shop đang cập nhật sản phẩm...</h3></div></div>
+    <div id="topup" class="sec" style="display:none"><div class="card"><h3>Nạp Thẻ</h3><input id="pin" placeholder="Mã thẻ"><button style="background:var(--red)" onclick="alert('Đã gửi!')">NẠP</button></div></div>
+    <div id="adm" class="sec" style="display:none"><div class="card"><h3>Quản trị</h3><div id="user-list"></div></div></div>
 
 <script>
-    // 1. CẤU HÌNH FIREBASE CỦA CẬU
     const firebaseConfig = {
         apiKey: "AIzaSyDTgTlg0VFzShYf-g83t6ep5y6WuRM6AVo",
         authDomain: "shophaianh-48d0f.firebaseapp.com",
@@ -64,84 +39,38 @@
         storageBucket: "shophaianh-48d0f.firebasestorage.app",
         messagingSenderId: "51501868207",
         appId: "1:51501868207:web:cd24d5dc02b0edff39605a",
-        databaseURL: "https://shophaianh-48d0f-default-rtdb.firebaseio.com" // Tớ đã thêm dòng này cho cậu
+        databaseURL: "https://shophaianh-48d0f-default-rtdb.firebaseio.com"
     };
 
-    // 2. KHỞI TẠO
     firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-    const ADMIN_USER = "adminHaianh";
+    const db = firebase.database();
+    let userData = null;
 
-    let db = { users: [], accs: [], cards: [], session: localStorage.getItem('haianh_session') };
-
-    // 3. ĐỒNG BỘ DỮ LIỆU
-    database.ref('/').on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            db.users = data.users || [];
-            db.accs = data.accs || [];
-            db.cards = data.cards || [];
-            render();
-        } else {
-            // Khởi tạo admin nếu database trống
-            db.users = [{u: ADMIN_USER, p: "Haiadmin", m: 999999}];
-            save();
-        }
+    db.ref('/').on('value', snap => {
+        const data = snap.val() || { users: [{u: 'adminHaianh', p: 'Haiadmin', m: 999999}] };
+        render(data);
     });
 
-    function save() {
-        database.ref('/').set({ users: db.users, accs: db.accs, cards: db.cards });
-    }
-
-    function render() {
-        if (!db.session) {
-            document.getElementById('auth-zone').innerHTML = `<button onclick="login()" style="width:auto;padding:5px 10px;background:var(--green)">ĐĂNG NHẬP</button>`;
+    function render(data) {
+        const session = localStorage.getItem('user');
+        if(!session) {
+            document.getElementById('user-info').innerHTML = '<button onclick="login()">VÀO</button>';
         } else {
-            let me = db.users.find(u => u.u === db.session);
-            if (me) {
-                document.getElementById('auth-zone').innerHTML = `<span>💰 ${me.m.toLocaleString()}đ</span> | <b onclick="logout()" style="color:var(--red);cursor:pointer">THOÁT</b>`;
-                if (me.u === ADMIN_USER) {
-                    document.getElementById('tab-adm-btn').style.display = 'block';
-                    document.getElementById('user-list-adm').innerHTML = db.users.map(u => `
-                        <tr><td>${u.u}</td><td>${u.m}đ</td><td><button onclick="deleteUser('${u.u}')" style="background:red;padding:2px">X</button></td></tr>
-                    `).join('');
-                }
-            }
+            const me = data.users.find(u => u.u === session);
+            document.getElementById('user-info').innerHTML = me.m + 'đ | <span onclick="logout()">THOÁT</span>';
+            if(me.u === 'adminHaianh') document.getElementById('adm-btn').style.display = 'block';
         }
     }
 
     function login() {
-        let u = prompt("Tài khoản:"), p = prompt("Mật khẩu:");
-        let user = db.users.find(x => x.u === u && x.p === p);
-        if (user) {
-            db.session = u;
-            localStorage.setItem('haianh_session', u);
-            render();
-        } else {
-            if (confirm("Không tìm thấy tài khoản. Đăng ký mới?")) {
-                db.users.push({u, p, m: 0});
-                save();
-                alert("Đã đăng ký! Hãy đăng nhập lại.");
-            }
-        }
-    }
-
-    function logout() {
-        localStorage.removeItem('haianh_session');
+        const u = prompt("Tên:"), p = prompt("MK:");
+        localStorage.setItem('user', u); // Tạm thời lưu để test
         location.reload();
     }
-
-    function goTab(id, el) {
-        document.querySelectorAll('.tab-sec').forEach(s => s.style.display = 'none');
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.getElementById('tab-' + id).style.display = 'block';
-        el.classList.add('active');
-    }
-
-    function deleteUser(name) {
-        if(name === ADMIN_USER) return;
-        db.users = db.users.filter(u => u.u !== name);
-        save();
+    function logout() { localStorage.clear(); location.reload(); }
+    function show(id) {
+        document.querySelectorAll('.sec').forEach(s => s.style.display='none');
+        document.getElementById(id).style.display='block';
     }
 </script>
 </body>
