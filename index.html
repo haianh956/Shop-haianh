@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHOP HAIANH - ONLINE</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <style>
+        :root { --green: #2ecc71; --red: #e74c3c; --dark: #2c3e50; --bg: #f1f2f6; --blue: #3498db; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding-bottom: 30px; }
+        .header { background: var(--dark); color: #fff; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--green); position: sticky; top: 0; z-index: 1000; }
+        .nav { display: flex; background: #fff; border-bottom: 1px solid #ddd; }
+        .tab { flex: 1; padding: 12px; text-align: center; font-size: 12px; font-weight: bold; color: #777; cursor: pointer; }
+        .tab.active { color: var(--green); border-bottom: 3px solid var(--green); }
+        .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px; max-width: 600px; margin: auto; }
+        .game-card { background: #fff; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; }
+        .acc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; max-width: 600px; margin: auto; }
+        .acc-box { background: #fff; border-radius: 10px; padding: 10px; border: 1px solid #ddd; text-align: center; }
+        .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+        button { border: none; border-radius: 8px; padding: 12px; font-weight: bold; cursor: pointer; color: white; width: 100%; transition: 0.3s; }
+        .btn-buy { background: var(--green); }
+        .btn-red { background: var(--red); }
+        .btn-blue { background: var(--blue); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; }
+        .user-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
+        .user-table th, .user-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div style="font-weight: bold; font-size: 18px;">SHOP HAIANH</div>
+    <div id="auth-zone">Đang tải...</div>
+</div>
+
+<div class="nav">
+    <div class="tab active" onclick="goTab('buy', this)">MUA ACC</div>
+    <div class="tab" onclick="goTab('topup', this)">NẠP TIỀN</div>
+    <div id="tab-his-btn" class="tab" style="display:none" onclick="goTab('his', this)">LỊCH SỬ</div>
+    <div id="tab-adm-btn" class="tab" style="display:none" onclick="goTab('adm', this)">QUẢN TRỊ</div>
+</div>
+
+<div id="tab-buy" class="tab-sec">
+    <div id="menu-game" class="grid-menu">
+        <div class="game-card" onclick="openGame('Roblox')">🤖<h3>Roblox</h3></div>
+        <div class="game-card" onclick="openGame('Free Fire')">🔥<h3>Free Fire</h3></div>
+        <div class="game-card" onclick="openGame('Liên Quân')">⚔️<h3>Liên Quân</h3></div>
+        <div class="game-card" onclick="openGame('Liên Quân 0k')">🎁<h3>Liên Quân 0k</h3></div>
+        <div class="game-card" style="background: #fff9e6; border: 2px solid #f1c40f;" onclick="openGame('Tặng mã nạp tiền')">🎫<h3>Tặng mã nạp tiền</h3></div>
+    </div>
+    <div id="detail-game" style="display:none; padding:10px; max-width:600px; margin:auto;">
+        <button style="background:#95a5a6; width:auto; margin-bottom:15px;" onclick="backToMenu()">⬅ Quay lại</button>
+        <div id="acc-list-grid" class="acc-grid"></div>
+    </div>
+</div>
+
+<div id="tab-topup" class="tab-sec" style="display:none; padding:15px;">
+    <div class="card">
+        <h3>💳 Nạp Thẻ Cào (Duyệt tay)</h3>
+        <select id="card-type"><option value="Viettel">Viettel</option><option value="Vinaphone">Vinaphone</option><option value="Mobifone">Mobifone</option><option value="Zing">Zing</option></select>
+        <select id="card-amount"><option value="10000">10.000đ</option><option value="20000">20.000đ</option><option value="50000">50.000đ</option><option value="100000">100.000đ</option></select>
+        <input type="number" id="card-seri" placeholder="Số Seri thẻ">
+        <input type="number" id="card-pin" placeholder="Mã thẻ (Pin)">
+        <button class="btn-red" onclick="sendCard()">GỬI THẺ DUYỆT</button>
+    </div>
+    <div class="card">
+        <h3>🎁 Nhập Mã Giftcode</h3>
+        <input type="text" id="gift-input" placeholder="Nhập mã nạp tiền">
+        <button class="btn-blue" onclick="useGiftcode()">XÁC NHẬN</button>
+    </div>
+</div>
+
+<div id="tab-his" class="tab-sec" style="display:none; padding:15px;"><div id="his-display"></div></div>
+
+<div id="tab-adm" class="tab-sec" style="display:none; padding:15px;">
+    <div class="card">
+        <h3>⏳ Thẻ Chờ Duyệt</h3>
+        <table class="user-table"><thead><tr><th>Khách</th><th>Tiền</th><th>Mã</th><th>Lệnh</th></tr></thead><tbody id="card-list-adm"></tbody></table>
+    </div>
+    <div class="card">
+        <h3>👥 Quản Lý Khách</h3>
+        <table class="user-table"><thead><tr><th>Tên</th><th>Tiền</th><th>Lệnh</th></tr></thead><tbody id="user-list-adm"></tbody></table>
+    </div>
+    <div class="card">
+        <h3>📤 Đăng Acc / Mã Tặng</h3>
+        <select id="post-cat"><option>Roblox</option><option>Free Fire</option><option>Liên Quân</option><option>Liên Quân 0k</option><option>Tặng mã nạp tiền</option></select>
+        <input id="post-u" placeholder="TK hoặc Nội dung Mã"><input id="post-p" placeholder="MK"><input id="post-pr" type="number" placeholder="Giá">
+        <button class="btn-red" onclick="admPost()">ĐĂNG SHOP</button>
+    </div>
+</div>
+
+<div id="auth-modal" class="modal">
+    <div class="modal-content">
+        <h2 id="modal-title">ĐĂNG NHẬP</h2>
+        <input type="text" id="u-in" placeholder="Tài khoản"><input type="password" id="p-in" placeholder="Mật khẩu">
+        <button class="btn-red" onclick="doAuth()">VÀO SHOP</button>
+        <p style="cursor:pointer;font-size:12px;margin-top:15px;color:#777" onclick="toggleAuthMode()">Đổi Đăng nhập / Đăng ký</p>
+    </div>
+</div>
+
+<script>
+    // --- CẤU HÌNH FIREBASE CỦA CẬU ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyDTgTlg0VFzShYf-g83t6ep5y6WuRM6AVo",
+        authDomain: "shophaianh-48d0f.firebaseapp.com",
+        projectId: "shophaianh-48d0f",
+        storageBucket: "shophaianh-48d0f.firebasestorage.app",
+        messagingSenderId: "51501868207",
+        appId: "1:51501868207:web:cd24d5dc02b0edff39605a",
+        databaseURL: "https://shophaianh-48d0f-default-rtdb.firebaseio.com"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const ADMIN_USER = "adminHaianh";
+    let isLoginMode = true;
+
+    let db = { users: [], accs: [], cards: [], codes: [], session: localStorage.getItem('haianh_ss') };
+
+    // Đồng bộ dữ liệu
+    database.ref('/').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            db.users = data.users || [{u: ADMIN_USER, p: "Haiadmin", m: 999999, bought: []}];
+            db.accs = data.accs || [];
+            db.cards = data.cards || [];
+            db.codes = data.codes || [];
+            render();
+        } else { save(); }
+    });
+
+    function save() {
+        database.ref('/').set({ users: db.users, accs: db.accs, cards: db.cards, codes: db.codes });
+    }
+
+    function render() {
+        if(!db.session) { document.getElementById('auth-modal').style.display = 'flex'; return; }
+        document.getElementById('auth-modal').style.display = 'none';
+        
+        let me = db.users.find(u => u.u === db.session);
+        if(!me) { logout(); return; }
+
+        document.getElementById('auth-zone').innerHTML = `<span>💰 ${me.m.toLocaleString()}đ</span> | <b onclick="logout()" style="color:var(--red);cursor:pointer">THOÁT</b>`;
+        document.getElementById('tab-his-btn').style.display = 'block';
+
+        if(me.u === ADMIN_USER) {
+            document.getElementById('tab-adm-btn').style.display = 'block';
+            document.getElementById('card-list-adm').innerHTML = db.cards.map(c => `
+                <tr><td>${c.user}</td><td>${c.amount}</td><td>${c.pin}</td>
+                <td><button onclick="approveCard('${c.id}')" style="background:green;padding:3px">V</button></td></tr>`).join('');
+            document.getElementById('user-list-adm').innerHTML = db.users.map(u => `
+                <tr><td>${u.u}</td><td>${u.m}đ</td><td><button onclick="addMoney('${u.u}')" style="background:blue;padding:3px">+</button></td></tr>`).join('');
+        }
+        document.getElementById('his-display').innerHTML = `<h3>📜 Lịch sử</h3>` + (me.bought || []).map(a => `<div class="card"><b>${a.cat}</b>: ${a.u} | ${a.p}</div>`).join('');
+    }
+
+    function doAuth() {
+        let u = document.getElementById('u-in').value, p = document.getElementById('p-in').value;
+        if(isLoginMode) {
+            let user = db.users.find(x => x.u === u && x.p === p);
+            if(user) { db.session = u; localStorage.setItem('haianh_ss', u); render(); } else alert("Sai!");
+        } else {
+            db.users.push({u, p, m: 0, bought: []}); save(); alert("Xong! Đăng nhập đi cậu.");
+        }
+    }
+
+    function sendCard() {
+        db.cards.push({id: Date.now(), user: db.session, amount: parseInt(document.getElementById('card-amount').value), pin: document.getElementById('card-pin').value});
+        save(); alert("Đã gửi thẻ chờ duyệt!");
+    }
+
+    function openGame(cat) {
+        document.getElementById('menu-game').style.display = 'none';
+        document.getElementById('detail-game').style.display = 'block';
+        let filtered = db.accs.filter(a => a.cat === cat && !a.sold);
+        document.getElementById('acc-list-grid').innerHTML = filtered.map(a => `
+            <div class="acc-box"><b>#${a.id}</b><br><span>${a.pr}đ</span><br><button class="btn-buy" onclick="buy(${a.id})">MUA</button></div>
+        `).join('') || "Hết hàng!";
+    }
+
+    function buy(id) {
+        let me = db.users.find(u => u.u === db.session), acc = db.accs.find(a => a.id === id);
+        if(me.m < acc.pr) return alert("Thiếu tiền!");
+        me.m -= acc.pr; acc.sold = true; if(!me.bought) me.bought = []; me.bought.push(acc);
+        save(); alert("Thành công! Xem ở Lịch sử nhé.");
+    }
+
+    function admPost() {
+        db.accs.push({cat: document.getElementById('post-cat').value, u: document.getElementById('post-u').value, p: document.getElementById('post-p').value, pr: parseInt(document.getElementById('post-pr').value), sold: false, id: Date.now()});
+        save(); alert("Đã đăng!");
+    }
+
+    function approveCard(id) {
+        let c = db.cards.find(x => x.id == id);
+        let u = db.users.find(x => x.u == c.user);
+        u.m += c.amount; db.cards = db.cards.filter(x => x.id != id);
+        save();
+    }
+
+    function addMoney(u) { let m = prompt("Cộng bao nhiêu?"); db.users.find(x => x.u == u).m += parseInt(m); save(); }
+    function toggleAuthMode() { isLoginMode = !isLoginMode; document.getElementById('modal-title').innerText = isLoginMode ? "ĐĂNG NHẬP" : "ĐĂNG KÝ"; }
+    function backToMenu() { document.getElementById('menu-game').style.display = 'grid'; document.getElementById('detail-game').style.display = 'none'; }
+    function goTab(id, el) { document.querySelectorAll('.tab-sec').forEach(s => s.style.display = 'none'); document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); document.getElementById('tab-' + id).style.display = 'block'; el.classList.add('active'); }
+    function logout() { localStorage.clear(); location.reload(); }
+</script>
+</body>
+</html>
