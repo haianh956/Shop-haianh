@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SHOP HAIANH - ONLINE</title>
+    <title>SHOP HAIANH - PHIÊN BẢN FIX LỖI</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <style>
@@ -15,25 +15,24 @@
         .tab.active { color: var(--green); border-bottom: 3px solid var(--green); }
         .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px; max-width: 600px; margin: auto; }
         .game-card { background: #fff; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; }
-        .acc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; max-width: 600px; margin: auto; }
+        .acc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
         .acc-box { background: #fff; border-radius: 10px; padding: 10px; border: 1px solid #ddd; text-align: center; }
-        .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .card { background: white; padding: 15px; border-radius: 10px; margin: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
         button { border: none; border-radius: 8px; padding: 12px; font-weight: bold; cursor: pointer; color: white; width: 100%; transition: 0.3s; }
-        .btn-buy { background: var(--green); }
-        .btn-red { background: var(--red); }
-        .btn-blue { background: var(--blue); }
+        .btn-buy { background: var(--green); } .btn-red { background: var(--red); } .btn-blue { background: var(--blue); }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; }
         .user-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
         .user-table th, .user-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .btn-mini { padding: 5px 8px; font-size: 10px; width: auto; margin: 2px; display: inline-block; }
     </style>
 </head>
 <body>
 
 <div class="header">
     <div style="font-weight: bold; font-size: 18px;">SHOP HAIANH</div>
-    <div id="auth-zone">Đang tải...</div>
+    <div id="auth-zone">Kết nối...</div>
 </div>
 
 <div class="nav">
@@ -49,7 +48,7 @@
         <div class="game-card" onclick="openGame('Free Fire')">🔥<h3>Free Fire</h3></div>
         <div class="game-card" onclick="openGame('Liên Quân')">⚔️<h3>Liên Quân</h3></div>
         <div class="game-card" onclick="openGame('Liên Quân 0k')">🎁<h3>Liên Quân 0k</h3></div>
-        <div class="game-card" style="background: #fff9e6; border: 2px solid #f1c40f;" onclick="openGame('Tặng mã nạp tiền')">🎫<h3>Tặng mã nạp tiền</h3></div>
+        <div class="game-card" style="background:#fff9e6;border:2px solid #f1c40f" onclick="openGame('Mã Tặng')">🎫<h3>Mã Tặng</h3></div>
     </div>
     <div id="detail-game" style="display:none; padding:10px; max-width:600px; margin:auto;">
         <button style="background:#95a5a6; width:auto; margin-bottom:15px;" onclick="backToMenu()">⬅ Quay lại</button>
@@ -57,52 +56,69 @@
     </div>
 </div>
 
-<div id="tab-topup" class="tab-sec" style="display:none; padding:15px;">
+<div id="tab-topup" class="tab-sec" style="display:none">
     <div class="card">
-        <h3>💳 Nạp Thẻ Cào (Duyệt tay)</h3>
-        <select id="card-type"><option value="Viettel">Viettel</option><option value="Vinaphone">Vinaphone</option><option value="Mobifone">Mobifone</option><option value="Zing">Zing</option></select>
-        <select id="card-amount"><option value="10000">10.000đ</option><option value="20000">20.000đ</option><option value="50000">50.000đ</option><option value="100000">100.000đ</option></select>
-        <input type="number" id="card-seri" placeholder="Số Seri thẻ">
-        <input type="number" id="card-pin" placeholder="Mã thẻ (Pin)">
-        <button class="btn-red" onclick="sendCard()">GỬI THẺ DUYỆT</button>
+        <h3>💳 Nạp Thẻ Cào</h3>
+        <select id="card-amount">
+            <option value="10000">10.000đ</option>
+            <option value="20000">20.000đ</option>
+            <option value="50000">50.000đ</option>
+            <option value="100000">100.000đ</option>
+        </select>
+        <input type="number" id="card-pin" placeholder="Nhập mã thẻ (trên 10 số)">
+        <button class="btn-red" onclick="sendCard()">GỬI THẺ</button>
     </div>
     <div class="card">
-        <h3>🎁 Nhập Mã Giftcode</h3>
-        <input type="text" id="gift-input" placeholder="Nhập mã nạp tiền">
-        <button class="btn-blue" onclick="useGiftcode()">XÁC NHẬN</button>
+        <h3>🎁 Nhập Giftcode</h3>
+        <input type="text" id="gift-input" placeholder="Nhập mã quà tặng">
+        <button class="btn-blue" onclick="useGiftcode()">NHẬN QUÀ</button>
     </div>
 </div>
 
-<div id="tab-his" class="tab-sec" style="display:none; padding:15px;"><div id="his-display"></div></div>
+<div id="tab-his" class="tab-sec" style="display:none; padding:15px;">
+    <div id="his-display"></div>
+</div>
 
-<div id="tab-adm" class="tab-sec" style="display:none; padding:15px;">
+<div id="tab-adm" class="tab-sec" style="display:none">
     <div class="card">
         <h3>⏳ Thẻ Chờ Duyệt</h3>
-        <table class="user-table"><thead><tr><th>Khách</th><th>Tiền</th><th>Mã</th><th>Lệnh</th></tr></thead><tbody id="card-list-adm"></tbody></table>
+        <table class="user-table">
+            <thead><tr><th>Khách</th><th>Tiền</th><th>Mã</th><th>Lệnh</th></tr></thead>
+            <tbody id="card-list-adm"></tbody>
+        </table>
     </div>
     <div class="card">
         <h3>👥 Quản Lý Khách</h3>
-        <table class="user-table"><thead><tr><th>Tên</th><th>Tiền</th><th>Lệnh</th></tr></thead><tbody id="user-list-adm"></tbody></table>
+        <table class="user-table">
+            <thead><tr><th>Tên</th><th>Tiền</th><th>Lệnh</th></tr></thead>
+            <tbody id="user-list-adm"></tbody>
+        </table>
     </div>
     <div class="card">
-        <h3>📤 Đăng Acc / Mã Tặng</h3>
-        <select id="post-cat"><option>Roblox</option><option>Free Fire</option><option>Liên Quân</option><option>Liên Quân 0k</option><option>Tặng mã nạp tiền</option></select>
-        <input id="post-u" placeholder="TK hoặc Nội dung Mã"><input id="post-p" placeholder="MK"><input id="post-pr" type="number" placeholder="Giá">
-        <button class="btn-red" onclick="admPost()">ĐĂNG SHOP</button>
+        <h3>📤 Đăng Acc / Tạo Giftcode</h3>
+        <select id="post-cat">
+            <option>Roblox</option><option>Free Fire</option><option>Liên Quân</option>
+            <option>Liên Quân 0k</option><option>Mã Tặng</option><option>Giftcode</option>
+        </select>
+        <input id="post-u" placeholder="Tài khoản hoặc Mã Giftcode">
+        <input id="post-p" placeholder="Mật khẩu (Giftcode thì bỏ trống)">
+        <input id="post-pr" type="number" placeholder="Giá hoặc Số tiền Giftcode">
+        <button class="btn-red" onclick="admPost()">ĐĂNG LÊN SHOP</button>
     </div>
 </div>
 
 <div id="auth-modal" class="modal">
     <div class="modal-content">
         <h2 id="modal-title">ĐĂNG NHẬP</h2>
-        <input type="text" id="u-in" placeholder="Tài khoản"><input type="password" id="p-in" placeholder="Mật khẩu">
-        <button class="btn-red" onclick="doAuth()">VÀO SHOP</button>
-        <p style="cursor:pointer;font-size:12px;margin-top:15px;color:#777" onclick="toggleAuthMode()">Đổi Đăng nhập / Đăng ký</p>
+        <input type="text" id="u-in" placeholder="Tài khoản">
+        <input type="password" id="p-in" placeholder="Mật khẩu">
+        <button class="btn-red" onclick="doAuth()">XÁC NHẬN</button>
+        <p id="toggle-text" style="cursor:pointer;font-size:12px;margin-top:15px;color:#777" onclick="toggleAuthMode()">Chưa có tài khoản? Đăng ký</p>
     </div>
 </div>
 
 <script>
-    // --- CẤU HÌNH FIREBASE CỦA CẬU ---
+    // CẤU HÌNH FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyDTgTlg0VFzShYf-g83t6ep5y6WuRM6AVo",
         authDomain: "shophaianh-48d0f.firebaseapp.com",
@@ -117,25 +133,21 @@
     const database = firebase.database();
     const ADMIN_USER = "adminHaianh";
     let isLoginMode = true;
-
     let db = { users: [], accs: [], cards: [], codes: [], session: localStorage.getItem('haianh_ss') };
 
-    // Đồng bộ dữ liệu
-    database.ref('/').on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            db.users = data.users || [{u: ADMIN_USER, p: "Haiadmin", m: 999999, bought: []}];
-            db.accs = data.accs || [];
-            db.cards = data.cards || [];
-            db.codes = data.codes || [];
-            render();
-        } else { save(); }
+    // TẢI DỮ LIỆU
+    database.ref('/').on('value', (s) => {
+        const data = s.val() || {};
+        db.users = data.users || [{u: ADMIN_USER, p: "Haiadmin", m: 999999999}];
+        db.accs = data.accs || [];
+        db.cards = data.cards || [];
+        db.codes = data.codes || [];
+        render();
     });
 
-    function save() {
-        database.ref('/').set({ users: db.users, accs: db.accs, cards: db.cards, codes: db.codes });
-    }
+    function save() { database.ref('/').set({ users: db.users, accs: db.accs, cards: db.cards, codes: db.codes }); }
 
+    // HIỂN THỊ GIAO DIỆN
     function render() {
         if(!db.session) { document.getElementById('auth-modal').style.display = 'flex'; return; }
         document.getElementById('auth-modal').style.display = 'none';
@@ -143,67 +155,166 @@
         let me = db.users.find(u => u.u === db.session);
         if(!me) { logout(); return; }
 
-        document.getElementById('auth-zone').innerHTML = `<span>💰 ${me.m.toLocaleString()}đ</span> | <b onclick="logout()" style="color:var(--red);cursor:pointer">THOÁT</b>`;
+        // Hiển thị tiền (Admin là vô hạn)
+        let moneyDisplay = me.u === ADMIN_USER ? "∞" : me.m.toLocaleString() + "đ";
+        document.getElementById('auth-zone').innerHTML = `<span>💰 ${moneyDisplay}</span> | <b onclick="logout()" style="color:var(--red);cursor:pointer">THOÁT</b>`;
         document.getElementById('tab-his-btn').style.display = 'block';
 
         if(me.u === ADMIN_USER) {
             document.getElementById('tab-adm-btn').style.display = 'block';
+            
+            // Render thẻ chờ duyệt
             document.getElementById('card-list-adm').innerHTML = db.cards.map(c => `
-                <tr><td>${c.user}</td><td>${c.amount}</td><td>${c.pin}</td>
-                <td><button onclick="approveCard('${c.id}')" style="background:green;padding:3px">V</button></td></tr>`).join('');
+                <tr>
+                    <td>${c.user}</td>
+                    <td>${c.amount.toLocaleString()}</td>
+                    <td>${c.pin}</td>
+                    <td>
+                        <button class="btn-buy btn-mini" onclick="approveCard('${c.id}')">V</button>
+                        <button class="btn-red btn-mini" onclick="delCard('${c.id}')">X</button>
+                    </td>
+                </tr>`).join('');
+
+            // Render quản lý khách (Ẩn mật khẩu, thêm nút trừ tiền)
             document.getElementById('user-list-adm').innerHTML = db.users.map(u => `
-                <tr><td>${u.u}</td><td>${u.m}đ</td><td><button onclick="addMoney('${u.u}')" style="background:blue;padding:3px">+</button></td></tr>`).join('');
+                <tr>
+                    <td>${u.u}</td>
+                    <td>${u.u === ADMIN_USER ? '∞' : u.m.toLocaleString() + 'đ'}</td>
+                    <td>
+                        <button class="btn-buy btn-mini" onclick="changeMoney('${u.u}', 1)">+</button>
+                        <button class="btn-blue btn-mini" onclick="changeMoney('${u.u}', -1)">-</button>
+                        ${u.u !== ADMIN_USER ? `<button class="btn-red btn-mini" onclick="delUser('${u.u}')">X</button>` : ''}
+                    </td>
+                </tr>`).join('');
         }
-        document.getElementById('his-display').innerHTML = `<h3>📜 Lịch sử</h3>` + (me.bought || []).map(a => `<div class="card"><b>${a.cat}</b>: ${a.u} | ${a.p}</div>`).join('');
+
+        // Lịch sử mua
+        document.getElementById('his-display').innerHTML = `<h3>📜 Acc đã mua</h3>` + 
+            (me.bought || []).map(a => `<div class="card"><b>[${a.cat}]</b> TK: ${a.u} | MK: ${a.p}</div>`).join('') || "Chưa mua gì.";
     }
 
+    // ĐĂNG NHẬP & ĐĂNG KÝ
     function doAuth() {
-        let u = document.getElementById('u-in').value, p = document.getElementById('p-in').value;
+        let u = document.getElementById('u-in').value.trim(), p = document.getElementById('p-in').value.trim();
+        if(!u || !p) return alert("Vui lòng nhập đủ!");
+        
         if(isLoginMode) {
             let user = db.users.find(x => x.u === u && x.p === p);
-            if(user) { db.session = u; localStorage.setItem('haianh_ss', u); render(); } else alert("Sai!");
+            if(user) { db.session = u; localStorage.setItem('haianh_ss', u); render(); } 
+            else alert("Sai tài khoản hoặc mật khẩu!");
         } else {
-            db.users.push({u, p, m: 0, bought: []}); save(); alert("Xong! Đăng nhập đi cậu.");
+            if(db.users.find(x => x.u === u)) return alert("Tên tài khoản này đã có người dùng!");
+            db.users.push({u, p, m: 0, bought: []});
+            save(); alert("Đăng ký thành công! Giờ hãy đăng nhập.");
+            toggleAuthMode();
         }
     }
 
+    // NẠP THẺ CÀO (ĐÃ FIX LỖI NHẬP NGẮN)
     function sendCard() {
-        db.cards.push({id: Date.now(), user: db.session, amount: parseInt(document.getElementById('card-amount').value), pin: document.getElementById('card-pin').value});
-        save(); alert("Đã gửi thẻ chờ duyệt!");
+        let pin = document.getElementById('card-pin').value.trim();
+        let amount = parseInt(document.getElementById('card-amount').value);
+        if(pin.length < 10) return alert("Mã thẻ quá ngắn! Vui lòng nhập đúng mã thẻ cào.");
+        
+        db.cards.push({id: Date.now(), user: db.session, amount, pin});
+        save();
+        alert("Đã gửi thẻ! Chờ admin duyệt.");
+        document.getElementById('card-pin').value = "";
     }
 
+    // MUA ACC
     function openGame(cat) {
         document.getElementById('menu-game').style.display = 'none';
         document.getElementById('detail-game').style.display = 'block';
         let filtered = db.accs.filter(a => a.cat === cat && !a.sold);
         document.getElementById('acc-list-grid').innerHTML = filtered.map(a => `
-            <div class="acc-box"><b>#${a.id}</b><br><span>${a.pr}đ</span><br><button class="btn-buy" onclick="buy(${a.id})">MUA</button></div>
-        `).join('') || "Hết hàng!";
+            <div class="acc-box">
+                <b style="font-size:12px">ID: ${a.id.toString().slice(-5)}</b><br>
+                <span style="color:red; font-weight:bold">${a.pr.toLocaleString()}đ</span><br>
+                <button class="btn-buy" style="margin-top:5px; padding:5px" onclick="buy(${a.id})">MUA</button>
+            </div>`).join('') || "Hết hàng!";
     }
 
     function buy(id) {
         let me = db.users.find(u => u.u === db.session), acc = db.accs.find(a => a.id === id);
-        if(me.m < acc.pr) return alert("Thiếu tiền!");
-        me.m -= acc.pr; acc.sold = true; if(!me.bought) me.bought = []; me.bought.push(acc);
-        save(); alert("Thành công! Xem ở Lịch sử nhé.");
+        if(me.u !== ADMIN_USER && me.m < acc.pr) return alert("Bạn không đủ tiền!");
+        if(confirm("Xác nhận mua tài khoản này?")) {
+            if(me.u !== ADMIN_USER) me.m -= acc.pr;
+            acc.sold = true;
+            if(!me.bought) me.bought = [];
+            me.bought.push(acc);
+            save(); alert("Mua thành công! Vào Lịch Sử để xem.");
+            openGame(acc.cat);
+        }
     }
 
-    function admPost() {
-        db.accs.push({cat: document.getElementById('post-cat').value, u: document.getElementById('post-u').value, p: document.getElementById('post-p').value, pr: parseInt(document.getElementById('post-pr').value), sold: false, id: Date.now()});
-        save(); alert("Đã đăng!");
-    }
-
+    // QUẢN TRỊ - DUYỆT THẺ & CỘNG TIỀN
     function approveCard(id) {
         let c = db.cards.find(x => x.id == id);
         let u = db.users.find(x => x.u == c.user);
-        u.m += c.amount; db.cards = db.cards.filter(x => x.id != id);
-        save();
+        if(u) u.m += c.amount;
+        db.cards = db.cards.filter(x => x.id != id);
+        save(); alert("Đã duyệt thẻ!");
     }
 
-    function addMoney(u) { let m = prompt("Cộng bao nhiêu?"); db.users.find(x => x.u == u).m += parseInt(m); save(); }
-    function toggleAuthMode() { isLoginMode = !isLoginMode; document.getElementById('modal-title').innerText = isLoginMode ? "ĐĂNG NHẬP" : "ĐĂNG KÝ"; }
+    function changeMoney(uName, sign) {
+        let amount = prompt("Nhập số tiền muốn " + (sign > 0 ? "CỘNG" : "TRỪ") + ":");
+        if(amount && !isNaN(amount)) {
+            let u = db.users.find(x => x.u == uName);
+            u.m += (parseInt(amount) * sign);
+            if(u.m < 0) u.m = 0;
+            save();
+        }
+    }
+
+    function delUser(uName) {
+        if(confirm("Chắc chắn muốn XÓA khách này?")) {
+            db.users = db.users.filter(x => x.u !== uName);
+            save();
+        }
+    }
+
+    function delCard(id) {
+        if(confirm("Xóa yêu cầu nạp này?")) {
+            db.cards = db.cards.filter(x => x.id != id);
+            save();
+        }
+    }
+
+    function admPost() {
+        let cat = document.getElementById('post-cat').value, u = document.getElementById('post-u').value, p = document.getElementById('post-p').value, pr = parseInt(document.getElementById('post-pr').value) || 0;
+        if(!u) return alert("Nhập tài khoản/mã!");
+        if(cat === 'Giftcode') { db.codes.push({u, pr}); } 
+        else { db.accs.push({cat, u, p, pr, sold: false, id: Date.now()}); }
+        save(); alert("Đã đăng!");
+        document.getElementById('post-u').value = ""; document.getElementById('post-p').value = "";
+    }
+
+    // CÁC HÀM PHỤ
+    function useGiftcode() {
+        let codeIn = document.getElementById('gift-input').value.trim();
+        let idx = db.codes.findIndex(c => c.u === codeIn);
+        if(idx === -1) return alert("Mã quà tặng không đúng hoặc đã hết hạn!");
+        let me = db.users.find(u => u.u === db.session);
+        me.m += db.codes[idx].pr;
+        db.codes.splice(idx, 1);
+        save(); alert("Nạp Giftcode thành công!");
+        document.getElementById('gift-input').value = "";
+    }
+
+    function toggleAuthMode() { 
+        isLoginMode = !isLoginMode; 
+        document.getElementById('modal-title').innerText = isLoginMode ? "ĐĂNG NHẬP" : "ĐĂNG KÝ";
+        document.getElementById('toggle-text').innerText = isLoginMode ? "Chưa có tài khoản? Đăng ký" : "Đã có tài khoản? Đăng nhập";
+    }
     function backToMenu() { document.getElementById('menu-game').style.display = 'grid'; document.getElementById('detail-game').style.display = 'none'; }
-    function goTab(id, el) { document.querySelectorAll('.tab-sec').forEach(s => s.style.display = 'none'); document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); document.getElementById('tab-' + id).style.display = 'block'; el.classList.add('active'); }
+    function goTab(id, el) { 
+        document.querySelectorAll('.tab-sec').forEach(s => s.style.display = 'none'); 
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); 
+        document.getElementById('tab-' + id).style.display = 'block'; 
+        el.classList.add('active'); 
+        if(id === 'buy') backToMenu(); 
+    }
     function logout() { localStorage.clear(); location.reload(); }
 </script>
 </body>
